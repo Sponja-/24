@@ -28,8 +28,8 @@ class Addition(Expression):
 
 
 @dataclass
-class Substraction(Expression):
-    def eval(self: Substraction) -> Real:
+class Subtraction(Expression):
+    def eval(self: Subtraction) -> Real:
         return self.args[0] - self.args[1]
 
 
