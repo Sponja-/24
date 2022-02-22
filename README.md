@@ -1,7 +1,7 @@
 # 24
 
-Solving the 24 game problem using DP techniques.
+Finding solutions for the "24" card game using DP techniques.
 
-## Todo
+## TODOs
 
 * Implement associativity to reduce operation repetition.
