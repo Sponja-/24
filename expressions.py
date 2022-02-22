@@ -25,6 +25,9 @@ class Expression(ABC):
     def __hash__(self: Expression):
         return hash((self.args, type(self)))
 
+    def __eq__(self: Expression, other: Expression):
+        return type(self) is type(other) and self.args == other.args
+
 
 class Constant(Expression):
     def __init__(self: Expression, arg: Real) -> None:
