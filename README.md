@@ -2,7 +2,7 @@
 
 Finding solutions for the "24" card game using DP techniques.
 
-## Example
+## Examples
 
 ![example usage](img/example.png)
 

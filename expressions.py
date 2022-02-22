@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from functools import reduce
 from numbers import Real
 from typing import Iterable
 
@@ -49,11 +50,7 @@ class BinaryOperation(Expression):
         super().__init__(*args)
 
     def __str__(self: BinaryOperation) -> str:
-        left, right = map(
-            lambda arg: f"({str(arg)})" if type(arg) is not Constant else str(arg),
-            (self.arg1, self.arg2),
-        )
-        return f"{left} {self.symbol} {right}"
+        return "(" + f" {self.symbol} ".join(map(str, self.args)) + ")"
 
     @property
     def arg1(self: BinaryOperation) -> Expression:
@@ -69,17 +66,25 @@ class BinaryOperation(Expression):
         pass
 
 
-class CommutativeOperation(BinaryOperation):
-    def __init__(self: CommutativeOperation, *args: Expression) -> None:
+class CommutativeAssociativeOperation(BinaryOperation):
+    def __init__(self: CommutativeAssociativeOperation, *args: Expression) -> None:
         super().__init__(*args)
-        self.args = FrozenMultiset(args)  # Ignores order in hashing
+
+        # Association rules
+        if type(self.arg2) is type(self):
+            self.args = (self.arg1, *self.arg2.args)
+        if type(self.arg1) is type(self):
+            first, *rest = self.args
+            self.args = (*first.args, *rest)
+        
+        self.args = FrozenMultiset(self.args)  # Ignores order in hashes
 
 
-class Addition(CommutativeOperation):
+class Addition(CommutativeAssociativeOperation):
     symbol = "+"
 
     def eval(self: Addition) -> Real:
-        return self.arg1.eval() + self.arg2.eval()
+        return sum(arg.eval() for arg in self.args)
 
 
 class Subtraction(BinaryOperation):
@@ -89,11 +94,11 @@ class Subtraction(BinaryOperation):
         return self.arg1.eval() - self.arg2.eval()
 
 
-class Multiplication(CommutativeOperation):
+class Multiplication(CommutativeAssociativeOperation):
     symbol = "*"
 
     def eval(self: Multiplication) -> Real:
-        return self.arg1.eval() * self.arg2.eval()
+        return reduce(lambda x, y: x * y, [arg.eval() for arg in self.args])
 
 
 class Division(BinaryOperation):

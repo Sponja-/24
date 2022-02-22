@@ -34,7 +34,9 @@ def generate_operations(numbers: FrozenMultiset) -> set[Expression]:
         return result
 
 
-def filter_operations(operations: Iterable[Expression], target: Real) -> set[Expression]:
+def filter_operations(
+    operations: Iterable[Expression], target: Real
+) -> set[Expression]:
     result = set([])
     for op in operations:
         try:
@@ -48,4 +50,12 @@ def filter_operations(operations: Iterable[Expression], target: Real) -> set[Exp
 if __name__ == "__main__":
     cards = map(int, input("Space-separated card values:\n").split())
     all_ops = generate_operations(FrozenMultiset(cards))
-    pprint([str(op) for op in filter_operations(all_ops, 24)])
+    print("\nSolutions:")
+    print(
+        "\n".join(
+            [
+                str(op).removeprefix("(").removesuffix(")")
+                for op in filter_operations(all_ops, 24)
+            ]
+        )
+    )
