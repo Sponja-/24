@@ -1,10 +1,10 @@
-from functools import lru_cache
+from functools import cache
 from itertools import product
 from numbers import Real
 from typing import Iterable
+
 from more_itertools import powerset
 from multiset import FrozenMultiset
-from pprint import pprint
 
 from expressions import (
     Addition,
@@ -19,7 +19,7 @@ from expressions import (
 binary_operations = (Addition, Subtraction, Multiplication, Division)
 
 
-@lru_cache
+@cache
 def generate_operations(numbers: FrozenMultiset) -> set[Expression]:
     if len(numbers) == 1:
         elem = next(iter(numbers))
@@ -50,12 +50,15 @@ def filter_operations(
 if __name__ == "__main__":
     cards = map(int, input("Space-separated card values:\n").split())
     all_ops = generate_operations(FrozenMultiset(cards))
-    print("\nSolutions:")
-    print(
-        "\n".join(
-            [
-                str(op).removeprefix("(").removesuffix(")")
-                for op in filter_operations(all_ops, 24)
-            ]
+    if len(all_ops) > 0:
+        print("\nSolutions:")
+        print(
+            "\n".join(
+                [
+                    str(op).removeprefix("(").removesuffix(")")
+                    for op in filter_operations(all_ops, 24)
+                ]
+            )
         )
-    )
+    else:
+        print("No Solutions")

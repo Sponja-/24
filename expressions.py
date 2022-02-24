@@ -1,18 +1,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from functools import reduce
 from numbers import Real
-from typing import Iterable
-
-from multiset import FrozenMultiset
-from more_itertools import nth
 
 
 class Expression(ABC):
     def __init__(self: Expression, *args: Expression | Real) -> None:
-        self.args: Iterable[Expression | Real] = args
+        self.args: tuple[Expression | Real] = args
 
     @abstractmethod
     def eval(self: Expression) -> Real:
@@ -31,13 +26,13 @@ class Expression(ABC):
 
 
 class Constant(Expression):
-    def __init__(self: Expression, arg: Real) -> None:
+    def __init__(self: Constant, arg: Real) -> None:
         super().__init__(arg)
 
-    def eval(self: Expression) -> Real:
+    def eval(self: Constant) -> Real:
         return self.value
 
-    def __str__(self: Expression) -> str:
+    def __str__(self: Constant) -> str:
         return str(self.value)
 
     @property
@@ -54,11 +49,11 @@ class BinaryOperation(Expression):
 
     @property
     def arg1(self: BinaryOperation) -> Expression:
-        return nth(self.args, 0)
+        return self.args[0]
 
     @property
     def arg2(self: BinaryOperation) -> Expression:
-        return nth(self.args, 1)
+        return self.args[1]
 
     @property
     @abstractmethod
@@ -66,8 +61,16 @@ class BinaryOperation(Expression):
         pass
 
 
-class CommutativeAssociativeOperation(BinaryOperation):
-    def __init__(self: CommutativeAssociativeOperation, *args: Expression) -> None:
+class CommutativeOperation(BinaryOperation):
+    def __init__(self: CommutativeOperation, *args: Expression) -> None:
+        super().__init__(*args)
+
+        # Ignore order in hashes
+        self.args = tuple(sorted(self.args, key=lambda op: hash(op)))
+
+
+class AssociativeOperation(BinaryOperation):
+    def __init__(self: AssociativeOperation, *args: Expression) -> None:
         super().__init__(*args)
 
         # Association rules
@@ -76,8 +79,12 @@ class CommutativeAssociativeOperation(BinaryOperation):
         if type(self.arg1) is type(self):
             first, *rest = self.args
             self.args = (*first.args, *rest)
-        
-        self.args = FrozenMultiset(self.args)  # Ignores order in hashes
+
+
+class CommutativeAssociativeOperation(CommutativeOperation, AssociativeOperation):
+    def __init__(self: CommutativeAssociativeOperation, *args: Expression) -> None:
+        AssociativeOperation.__init__(self, *args)
+        CommutativeOperation.__init__(self, *self.args)
 
 
 class Addition(CommutativeAssociativeOperation):
@@ -89,6 +96,12 @@ class Addition(CommutativeAssociativeOperation):
 
 class Subtraction(BinaryOperation):
     symbol = "-"
+
+    def __init__(self: Subtraction, *args: Expression) -> None:
+        super().__init__(*args)
+
+        if type(self.arg1) is type(self):
+            self.args = (self.arg1.arg1, Addition(self.arg1.arg2, self.arg2))
 
     def eval(self: Subtraction) -> Real:
         return self.arg1.eval() - self.arg2.eval()
