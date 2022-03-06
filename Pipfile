@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 multiset = "*"
-more-itertools = "*"
 
 [dev-packages]
 

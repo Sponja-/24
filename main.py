@@ -3,7 +3,6 @@ from itertools import product
 from numbers import Real
 from typing import Iterable
 
-from more_itertools import powerset
 from multiset import FrozenMultiset
 
 from expressions import (
@@ -14,6 +13,7 @@ from expressions import (
     Multiplication,
     Subtraction,
 )
+from utils import strict_powerset
 
 
 binary_operations = (Addition, Subtraction, Multiplication, Division)
@@ -26,7 +26,7 @@ def generate_operations(numbers: FrozenMultiset) -> set[Expression]:
         return set([Constant(elem)])
     else:
         result = set([])
-        for s in filter(lambda s: len(s) not in (0, len(numbers)), powerset(numbers)):
+        for s in strict_powerset(numbers):
             setA = FrozenMultiset(s)
             setB = numbers - setA
             for arg1, arg2 in product(*map(generate_operations, (setA, setB))):
