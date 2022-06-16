@@ -1,6 +1,6 @@
 # 24
 
-Finding solutions for the "24" card game using DP techniques.
+Finding solutions for the "24" card game using DP.
 
 ## Examples
 
